@@ -35,3 +35,6 @@ add_executable(
 target_include_directories(${COMPILE_ID} PRIVATE .)
 target_include_directories(${COMPILE_ID} PRIVATE ${SOURCE_DIR})
 target_include_directories(${COMPILE_ID} PRIVATE ${INCLUDE_DIR})
+
+# CLI11 header-only library
+target_include_directories(${COMPILE_ID} INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/CLI11/include")
