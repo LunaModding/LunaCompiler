@@ -1,6 +1,0 @@
-[submodule "curlcpp"]
-	path = curlcpp
-	url = https://github.com/JosephP91/curlcpp.git
-[submodule "curl"]
-	path = curl
-	url = https://github.com/curl/curl.git
