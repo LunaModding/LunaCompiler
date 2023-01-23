@@ -1,5 +1,7 @@
-﻿using LunaCompiler.Commands;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Parsing;
 
 namespace LunaCompiler
 {
@@ -7,12 +9,31 @@ namespace LunaCompiler
     {
         public static async Task<int> Main(string[] args)
         {
-            var rootCommand = new RootCommand();
-            rootCommand.AddCommand(new InitCommand().Build());
+            ServiceProvider serviceProvider = BuildServiceProvider();
+            Parser parser = BuildParser(serviceProvider);
 
-            rootCommand.SetHandler(HandleRoot);
+            return await parser.InvokeAsync(args).ConfigureAwait(false);
+        }
 
-            return await rootCommand.InvokeAsync(args);
+        private static Parser BuildParser(ServiceProvider serviceProvider)
+        {
+            var commandLineBuilder = new CommandLineBuilder();
+
+            foreach (Command command in serviceProvider.GetServices<Command>())
+            {
+                commandLineBuilder.Command.AddCommand(command);
+                commandLineBuilder.Command.SetHandler(HandleRoot);
+            }
+
+            return commandLineBuilder.UseDefaults().Build();
+        }
+
+        private static ServiceProvider BuildServiceProvider()
+        {
+            var services = new ServiceCollection();
+            services.AddCliCommands();
+
+            return services.BuildServiceProvider();
         }
 
         private static void HandleRoot()
