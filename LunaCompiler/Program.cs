@@ -22,7 +22,6 @@ namespace LunaCompiler
             foreach (Command command in serviceProvider.GetServices<Command>())
             {
                 commandLineBuilder.Command.AddCommand(command);
-                commandLineBuilder.Command.SetHandler(HandleRoot);
             }
 
             return commandLineBuilder.UseDefaults().Build();
@@ -34,15 +33,6 @@ namespace LunaCompiler
             services.AddCliCommands();
 
             return services.BuildServiceProvider();
-        }
-
-        private static void HandleRoot()
-        {
-            Console.WriteLine("Luna Compiler - Create and compile Luna projects.");
-            Console.WriteLine();
-            Console.WriteLine("-- Commands --");
-            Console.WriteLine("init - Creates a new Luna project.");
-            Console.WriteLine("build - Compiles the Luna project in the current directory to a .lunad file.");
         }
     }
 }
