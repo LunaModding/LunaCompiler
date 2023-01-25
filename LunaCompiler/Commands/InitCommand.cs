@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.IO.Compression;
 
 namespace LunaCompiler.Commands
 {
@@ -48,6 +49,64 @@ namespace LunaCompiler.Commands
         {
             name = string.IsNullOrEmpty(name) ? id : name;
             description = string.IsNullOrEmpty(description) ? $"{id}, v{version}" : description;
+
+            string baseDir = Environment.CurrentDirectory;
+
+            Console.WriteLine("Downloading template...");
+
+            using HttpClient client = new HttpClient();
+            using Stream stream = client.GetStreamAsync("https://github.com/LunaModding/LunaTemplate/archive/refs/heads/main.zip").GetAwaiter().GetResult();
+            using ZipArchive archive = new(stream);
+
+            Console.WriteLine("Extracting template...");
+            archive.ExtractToDirectory(baseDir, true);
+
+            string replaceDir = Path.Combine(baseDir, "LunaTemplate-main");
+
+            Console.WriteLine("Applying values...");
+            RecursivelyReplace(replaceDir, "$id$", id);
+            RecursivelyReplace(replaceDir, "$version$", version);
+            RecursivelyReplace(replaceDir, "$name$", name);
+            RecursivelyReplace(replaceDir, "$description$", description);
+
+            Console.WriteLine("Moving generated project...");
+            foreach (string directory in Directory.EnumerateDirectories(replaceDir))
+            {
+                Directory.Move(directory, Path.Combine(baseDir, Path.GetFileName(directory)));
+            }
+
+            Console.WriteLine("Cleaning up...");
+            Directory.Delete(replaceDir);
+
+            Console.WriteLine("Done!");
+        }
+
+        private void RecursivelyReplace(string basePath, string phrase, string replacement)
+        {
+            var dir = new DirectoryInfo(basePath);
+
+#pragma warning disable CS0618
+            string replacedName = string.Copy(dir.FullName).Replace(phrase, replacement);
+#pragma warning restore CS0618
+            if (dir.FullName != replacedName && !Directory.Exists(replacedName))
+                Directory.Move(dir.FullName, replacedName);
+            dir = new DirectoryInfo(replacedName);
+             
+            foreach (FileInfo file in dir.GetFiles())
+            {
+                string changedFilePath = Path.Combine(dir.FullName, file.Name.Replace(phrase, replacement));
+                File.Move(file.FullName, changedFilePath);
+                var fileInfo = new FileInfo(changedFilePath);
+
+                string text = File.ReadAllText(fileInfo.FullName);
+                text = text.Replace(phrase, replacement);
+                File.WriteAllText(fileInfo.FullName, text);
+            }
+
+            foreach (DirectoryInfo directory in dir.GetDirectories())
+            {
+                RecursivelyReplace(directory.FullName, phrase, replacement);
+            }
         }
     }
 }
