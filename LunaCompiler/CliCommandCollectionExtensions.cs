@@ -15,7 +15,7 @@ namespace LunaCompiler
             IEnumerable<Type> commands = grabCommandType
                 .Assembly
                 .GetExportedTypes()
-                .Where((x) => x.Namespace == grabCommandType.Namespace && commandType.IsAssignableFrom(x));
+                .Where((x) => x.Namespace == "LunaCompiler.Commands" && commandType.IsAssignableFrom(x));
 
             foreach (Type command in commands)
             {
