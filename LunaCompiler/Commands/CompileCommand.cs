@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.Linq;
+﻿using System.CommandLine;
+using System.IO.Compression;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace LunaCompiler.Commands
 {
@@ -13,29 +10,36 @@ namespace LunaCompiler.Commands
         {
             AddAlias("c");
 
-            var compiler = new Option<string>(new string[] { "--compiler", "-c" })
-            {
-                Name = "compiler",
-                Description = "The path to the compiler to use to compile .lua source files before they are packaged into a .lunad file.",
-                IsRequired = false,
-            };
-
-            var arguments = new Option<string>(new string[] { "--arguments", "-a" })
-            {
-                Name = "arguments",
-                Description = "The arguments to use if a compiler is set to compile .lua source files before they are packaged into a .lunad file. (NOTE: If using this option, you should mark where the main filename argument with go by substituting it with {MAIN}",
-                IsRequired = false,
-            };
-
-            AddOption(compiler);
-            AddOption(arguments);
-
-            this.SetHandler(HandleCommand, compiler, arguments);
+            this.SetHandler(HandleCommand);
         }
 
-        private void HandleCommand(string compiler, string arguments)
+        private void HandleCommand()
         {
+            Console.WriteLine("Locating manifest...");
+            string[] manifests = Directory.EnumerateFiles(Environment.CurrentDirectory, "manifest.json", SearchOption.AllDirectories).ToArray();
 
+            if (manifests.Length == 0 || manifests == null)
+            {
+                throw new FileNotFoundException("Unable to find a manifest for the Luna project.");
+            }
+
+            string manifest = manifests[0];
+
+            string? projectDir = Path.GetDirectoryName(manifest);
+
+            // Todo, read manifest and compile lua
+
+            string outputName = Path.Combine(Environment.CurrentDirectory, $"{Path.GetFileName(projectDir)}.lunad");
+
+            if (File.Exists(outputName))
+            {
+                File.Delete(outputName);
+            }
+
+            Console.WriteLine("Packaging project...");
+            ZipFile.CreateFromDirectory(projectDir, outputName, CompressionLevel.Optimal, false);
+
+            Console.WriteLine("Done!");
         }
     }
 }
