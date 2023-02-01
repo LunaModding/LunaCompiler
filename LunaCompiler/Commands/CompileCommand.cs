@@ -23,7 +23,7 @@ namespace LunaCompiler.Commands
             var arguments = new Option<string>(new string[] { "--arguments", "-a" })
             {
                 Name = "arguments",
-                Description = "The arguments to use if a compiler is set to compile .lua source files before they are packaged into a .lunad file.",
+                Description = "The arguments to use if a compiler is set to compile .lua source files before they are packaged into a .lunad file. (NOTE: If using this option, you should mark where the main filename argument with go by substituting it with {MAIN}",
                 IsRequired = false,
             };
 
