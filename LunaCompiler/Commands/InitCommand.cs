@@ -54,7 +54,7 @@ namespace LunaCompiler.Commands
 
             Console.WriteLine("Downloading template...");
 
-            using HttpClient client = new HttpClient();
+            using HttpClient client = new();
             using Stream stream = client.GetStreamAsync("https://github.com/LunaModding/LunaTemplate/archive/refs/heads/main.zip").GetAwaiter().GetResult();
             using ZipArchive archive = new(stream);
 
